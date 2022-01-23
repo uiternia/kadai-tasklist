@@ -59,7 +59,7 @@ class TasksController extends Controller
             
         ]);
 
-        return back();
+        return redirect('/');
     }
 
     // getでmessages/（任意のid）にアクセスされた場合の「取得表示処理」
