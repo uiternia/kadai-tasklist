@@ -46,31 +46,37 @@ class TasksController extends Controller
     // postでmessages/にアクセスされた場合の「新規登録処理」
     public function store(Request $request)
     {
+        
         $request->validate([
-            'status' => 'required|max:10',   
             'content' => 'required|max:255',
+            'status' => 'required|max:10',
         ]);
-         // メッセージを作成
-        $task = new Task;
-        $task->user_id = \Auth::id();
-        $task->status = $request->status;
-        $task->content = $request->content;
-        $task->save();
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
+        
+        $request->user()->tasks()->create([
+            'status' => $request->status,   
+            'content' => $request->content,
+            
+        ]);
+
+        return back();
     }
 
     // getでmessages/（任意のid）にアクセスされた場合の「取得表示処理」
     public function show($id)
     {
-         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-
-        // メッセージ詳細ビューでそれを表示
+         
+        if (\Auth::id() === $task->user_id) {  
+           
         return view('tasks.show', [
             'task' => $task,
         ]);
+        
+        } else {
+        
+        return redirect('/');
+        }
     }
 
     // getでmessages/（任意のid）/editにアクセスされた場合の「更新画面表示処理」
@@ -79,10 +85,14 @@ class TasksController extends Controller
         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
 
-        // メッセージ編集ビューでそれを表示
+        if (\Auth::id() === $task->user_id) {  
         return view('tasks.edit', [
             'task' => $task,
         ]);
+        } else {
+            
+        return redirect('/');
+        }
     }
 
     // putまたはpatchでmessages/（任意のid）にアクセスされた場合の「更新処理」
@@ -97,11 +107,13 @@ class TasksController extends Controller
         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
         // メッセージを更新
-        $task->status = $request->status;
+        if (\Auth::id() === $task->user_id) { 
+            
+        $task->status = $request->status;  
         $task->content = $request->content;
         $task->save();
 
-        // トップページへリダイレクトさせる
+         }
         return redirect('/');
     }
 
